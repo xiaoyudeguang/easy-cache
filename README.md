@@ -3,35 +3,45 @@
 #### 介绍
 一个极度便捷的内存型缓存，操作简单，操作简单，操作简单，重要的事情说三遍。你想要的缓存功能都不支持，只有添加缓存这一功能，用于缓存一些万年不变的配置项再好不过。对你的系统来说，有它没它基本没啥影响。更坑爹的是，删除缓存值，只能在方法中手动删除。。。再烂的产品也总会有人用，没错，就是这么自信。
 
-#### 软件架构
-软件架构说明
+# easy-log
 
+## 介绍
+一个实用的日志采集器。你可以向以往使用日志模块一样输出日志，不同的是，如果引进了easy-log日志采集器模块，你的日志不再像以往一样只是日志了。easy-log会把系统运行期间产生的所有日志储存起来并发送出去，你可以自定义多个日志处理器来接收并处理日志，比如放到数据库指定表，比如利用mq发送到指定服务器下，这样，你再也不需要远程线上服务器找日志bug了。github地址：https://github.com/xiaoyudeguang/easy-log
 
-#### 安装教程
+## 使用说明
+##### 引入LogUtil对象
+```
+private static LogUtil logger = LoggerManager.getLogger(Demo.class);
+```
+##### 使用LogUtil对象
+```
+logger.info("这是一条日志！");   //支持输出List，Map，Object数组
+```
+## Maven引用(如果版本有变化，请自行去maven中央仓库引用)
+```
+<dependency>
+    <groupId>io.github.xiaoyudeguang</groupId>
+    <artifactId>easy-cache</artifactId>
+    <version>3.0.2-RELEASE</version>
+</dependency>
+```
 
-1. xxxx
-2. xxxx
-3. xxxx
+## 日志处理器
+那么问题来了，日志采集器的采集能力体现在哪呢？采集的日志又去哪了？别急，我们定义这样一个(或多个)类（此处用到了easy-brancher，项目地址：https://gitee.com/xiaoyudeguang/easy-brancher）：
+```
+@Brancher(key = "db_log_handler", todo = { "数据库日志处理器" }, args = {LogConfig.KEY})
+public class DBLogHandler extends AbstractLogBrancher{
+	
+	@Override
+	public Object doService(List<LogInfo> infos) {
+		Console.log("日志", infos);
+		return "我最棒！";
+	}
 
-#### 使用说明
-
-1. xxxx
-2. xxxx
-3. xxxx
-
-#### 参与贡献
-
-1. Fork 本仓库
-2. 新建 Feat_xxx 分支
-3. 提交代码
-4. 新建 Pull Request
-
-
-#### 码云特技
-
-1. 使用 Readme\_XXX.md 来支持不同的语言，例如 Readme\_en.md, Readme\_zh.md
-2. 码云官方博客 [blog.gitee.com](https://blog.gitee.com)
-3. 你可以 [https://gitee.com/explore](https://gitee.com/explore) 这个地址来了解码云上的优秀开源项目
-4. [GVP](https://gitee.com/gvp) 全称是码云最有价值开源项目，是码云综合评定出的优秀开源项目
-5. 码云官方提供的使用手册 [https://gitee.com/help](https://gitee.com/help)
-6. 码云封面人物是一档用来展示码云会员风采的栏目 [https://gitee.com/gitee-stars/](https://gitee.com/gitee-stars/)
+	@Override
+	public void addLogConfig(EasyList keys) {
+		keys.add("db_log_handler");
+	}
+}
+```
+> 自定义的日志处理器需要继承easy-log提供的AbstractLogBrancher抽象类。需要实现两个方法：doService()方法是真正的接收并处理日志的方法；addLogConfig()方法中将自定义的日志处理器中的@Brancher注解中的key参数注册到easy-log中，这样就可以在doService()方法接收日志信息了。
